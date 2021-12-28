@@ -27,7 +27,7 @@ export default {
   },
   beforeDestroy() {
     clearInterval(this.timerId)
-    window.removeEventListener('resize', this.screenAdapter)
+    window.onresize = null
   },
   methods: {
     // 创建echarts实例对象
@@ -125,6 +125,7 @@ export default {
       const showData = this.allData.slice(start, end)
       const sellerNames = showData.map((item) => item.name)
       const sellerValues = showData.map((item) => item.value)
+      // 更新配置
       const dataOption = {
         yAxis: {
           data: sellerNames
@@ -149,6 +150,7 @@ export default {
     // 屏幕适配
     screenAdapter() {
       const titleFontSize = (this.$refs.seller_ref.offsetWidth / 100) * 3.6
+      // 设置响应式配置
       const AdapterOption = {
         title: {
           textStyle: {
