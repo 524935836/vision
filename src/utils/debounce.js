@@ -1,5 +1,5 @@
 module.exports = function (fn, delay) {
-  var timerDebounce = null
+  let timerDebounce = null
   return function () {
     timerDebounce && clearTimeout(timerDebounce)
     timerDebounce = setTimeout(() => {
