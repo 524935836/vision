@@ -132,6 +132,7 @@ export default {
       const timeArr = this.allData.common.month
       // 每个系列数据
       const valueArr = this.allData[this.choiceType].data
+      // 图例数据
       const legendArr = valueArr.map((item) => item.name)
       const seriesArr = valueArr.map((item, index) => {
         return {
