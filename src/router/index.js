@@ -4,6 +4,7 @@ import SellerPage from '@/views/SellerPage'
 import TrendPage from '@/views/TrendPage'
 import MapPage from '@/views/MapPage'
 import RankPage from '@/views/RankPage'
+import HotPage from '@/views/HotPage'
 
 Vue.use(VueRouter)
 
@@ -11,7 +12,8 @@ const routes = [
   { path: '/seller', component: SellerPage },
   { path: '/trend', component: TrendPage },
   { path: '/map', component: MapPage },
-  { path: '/rank', component: RankPage }
+  { path: '/rank', component: RankPage },
+  { path: '/hot', component: HotPage }
 ]
 
 const router = new VueRouter({
