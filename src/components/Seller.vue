@@ -23,7 +23,6 @@ export default {
     this.getData()
     // 防抖
     window.onresize = debounce(this.screenAdapter, 200)
-    this.screenAdapter()
   },
   beforeDestroy() {
     clearInterval(this.timerId)
@@ -135,6 +134,7 @@ export default {
         }
       }
       this.chartInstance.setOption(dataOption)
+      this.screenAdapter()
     },
     // 每三秒切换下一页
     startInterval() {

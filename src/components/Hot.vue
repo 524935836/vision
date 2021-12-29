@@ -25,7 +25,6 @@ export default {
     this.getData()
     // 防抖
     window.onresize = debounce(this.screenAdapter, 200)
-    this.screenAdapter()
   },
   beforeDestroy() {
     window.onresize = null
@@ -137,6 +136,7 @@ export default {
         ]
       }
       this.chartInstance.setOption(dataOption)
+      this.screenAdapter()
     },
     // 屏幕适配
     screenAdapter() {
