@@ -20,14 +20,23 @@ export default {
       titleFontSize: 0
     }
   },
+  created() {
+    this.$socket.registerCallBack('hotData', this.getData)
+  },
   mounted() {
     this.initCharts()
-    this.getData()
+    this.$socket.send({
+      action: 'getData',
+      socketType: 'hotData',
+      chartName: 'hotproduct',
+      value: ''
+    })
     // 防抖
     window.onresize = debounce(this.screenAdapter, 200)
   },
   beforeDestroy() {
     window.onresize = null
+    this.$socket.unRegisterCallBack('hotData')
   },
   computed: {
     titleName() {
@@ -107,8 +116,8 @@ export default {
       this.chartInstance.setOption(initOption)
     },
     // 获取数据
-    async getData() {
-      const { data: res } = await this.$http.get('hotproduct')
+    getData(res) {
+      // const { data: res } = await this.$http.get('hotproduct')
       this.allData = res
       this.updateChart()
     },

@@ -18,15 +18,24 @@ export default {
       timerId: null
     }
   },
+  created() {
+    this.$socket.registerCallBack('sellerkData', this.getData)
+  },
   mounted() {
     this.initCharts()
-    this.getData()
+    this.$socket.send({
+      action: 'getData',
+      socketType: 'sellerkData',
+      chartName: 'seller',
+      value: ''
+    })
     // 防抖
     window.onresize = debounce(this.screenAdapter, 200)
   },
   beforeDestroy() {
     clearInterval(this.timerId)
     window.onresize = null
+    this.$socket.unRegisterCallBack('sellerkData')
   },
   methods: {
     // 创建echarts实例对象
@@ -106,8 +115,8 @@ export default {
       })
     },
     // 获取数据
-    async getData() {
-      const { data: res } = await this.$http.get('seller')
+    getData(res) {
+      // const { data: res } = await this.$http.get('seller')
       this.allData = res
       // 从小到大排序
       this.allData.sort((a, b) => a.value - b.value)

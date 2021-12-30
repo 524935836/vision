@@ -23,15 +23,22 @@ export default {
     this.axiosInstance = axios.create({
       baseURL: 'http://101.34.160.195:9997'
     })
+    this.$socket.registerCallBack('mapData', this.getData)
   },
   mounted() {
     this.initCharts()
-    this.getData()
+    this.$socket.send({
+      action: 'getData',
+      socketType: 'mapData',
+      chartName: 'map',
+      value: ''
+    })
     // 防抖
     window.onresize = debounce(this.screenAdapter, 200)
   },
   beforeDestroy() {
     window.onresize = null
+    this.$socket.unRegisterCallBack('mapData')
   },
   methods: {
     // 创建echarts实例对象
@@ -85,8 +92,8 @@ export default {
       })
     },
     // 获取数据
-    async getData() {
-      const { data: res } = await this.$http.get('map')
+    getData(res) {
+      // const { data: res } = await this.$http.get('map')
       this.allData = res
       this.updateChart()
     },

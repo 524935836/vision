@@ -17,15 +17,24 @@ export default {
       tiemrId: null
     }
   },
+  created() {
+    this.$socket.registerCallBack('stockData', this.getData)
+  },
   mounted() {
     this.initCharts()
-    this.getData()
+    this.$socket.send({
+      action: 'getData',
+      socketType: 'stockData',
+      chartName: 'stock',
+      value: ''
+    })
     // 防抖
     window.onresize = debounce(this.screenAdapter, 200)
   },
   beforeDestroy() {
     window.onresize = null
     clearInterval(this.tiemrId)
+    this.$socket.unRegisterCallBack('stockData')
   },
   methods: {
     // 创建echarts实例对象
@@ -46,8 +55,8 @@ export default {
       this.chartInstance.on('mouseout', () => [this.startInterval()])
     },
     // 获取数据
-    async getData() {
-      const { data: res } = await this.$http.get('stock')
+    getData(res) {
+      // const { data: res } = await this.$http.get('stock')
       this.allData = res
       this.updateChart()
       this.startInterval()

@@ -1,4 +1,4 @@
-module.exports = function (fn, delay) {
+export default function (fn, delay) {
   let timerDebounce = null
   return function () {
     timerDebounce && clearTimeout(timerDebounce)
