@@ -9,11 +9,16 @@ import '@/assets/css/global.less'
 import './assets/font/iconfont.css'
 // 对服务器进行WebSocket连接
 import SocketService from '@/utils/socket_service'
+// 引入主题
+import './assets/lib/theme/chalk.js'
+import './assets/lib/theme/vintage.js'
+
 SocketService.Instance.connect()
 // 注册全局对象
 Vue.prototype.$socket = SocketService.Instance
 
-axios.defaults.baseURL = 'http://127.0.0.1:8888/api/'
+// axios.defaults.baseURL = 'http://127.0.0.1:8888/api/'
+axios.defaults.baseURL = 'http://101.34.160.195:8888/api/'
 
 Vue.prototype.$http = axios
 // 在vue的原型中绑定echarts

@@ -17,16 +17,17 @@ export default class SocketService {
   connect() {
     if (!window.WebSocket) console.log('你的浏览器不支持WebSocket')
     // 创建WebSocket实例,赋值给SocketService实例的方法
-    this.ws = new WebSocket('ws://localhost:9998')
+    // this.ws = new WebSocket('ws://localhost:9998')
+    this.ws = new WebSocket('ws://101.34.160.195:9998')
     // 连接成功的事件
     this.ws.onopen = () => {
-      console.log('连接服务器成功')
+      // console.log('连接服务器成功')
       this.connected = true
       this.connectRetryCount = 0
     }
     // 连接失败的回调
     this.ws.onclose = () => {
-      console.log('连接服务器失败')
+      // console.log('连接服务器失败')
       this.connected = false
       this.connectRetryCount++
       setTimeout(() => {
@@ -45,9 +46,9 @@ export default class SocketService {
           const realData = JSON.parse(recvData.data)
           this.callBackMapping[socketType].call(this, realData)
         } else if (action === 'fullScreen') {
-
+          this.callBackMapping[socketType].call(this, recvData)
         } else if (action === 'themeChange') {
-
+          this.callBackMapping[socketType].call(this, recvData)
         }
       }
     }

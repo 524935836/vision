@@ -6,8 +6,9 @@
 
 <script>
 import axios from 'axios'
-import debounce from '@/utils/debounce.js'
+import Debounce from '@/utils/debounce.js'
 import { getProvinceMapInfo } from '@/utils/map_utils.js'
+import { mapState } from 'vuex'
 
 export default {
   name: 'Map',
@@ -23,29 +24,43 @@ export default {
     this.axiosInstance = axios.create({
       baseURL: 'http://101.34.160.195:9997'
     })
-    this.$socket.registerCallBack('mapData', this.getData)
-  },
-  mounted() {
-    this.initCharts()
     this.$socket.send({
       action: 'getData',
       socketType: 'mapData',
       chartName: 'map',
       value: ''
     })
+    this.$socket.registerCallBack('mapData', this.getData)
+  },
+  mounted() {
+    // this.initCharts()
+
     // 防抖
-    window.onresize = debounce(this.screenAdapter, 200)
+    // window.onresize = new Debounce().create(this.screenAdapter, 200)
+    window.addEventListener('resize', new Debounce().create(this.screenAdapter, 200))
   },
   beforeDestroy() {
-    window.onresize = null
+    window.removeEventListener('resize', this.screenAdapter)
     this.$socket.unRegisterCallBack('mapData')
+  },
+  computed: {
+    ...mapState(['theme'])
+  },
+  watch: {
+    theme() {
+      this.chartInstance.dispose()
+      this.initCharts()
+      this.updateChart()
+      this.screenAdapter()
+    }
   },
   methods: {
     // 创建echarts实例对象
     async initCharts() {
-      this.chartInstance = this.$echarts.init(this.$refs.map_ref, 'chalk')
-      // 获取地图矢量数据
+      this.chartInstance = this.$echarts.init(this.$refs.map_ref, this.theme)
+      // 获取本地地图矢量数据
       // const res = await axios.get('http://localhost:8000/static/map/china.json')
+      // 获取远程接口的地图矢量数据
       const res = await this.axiosInstance.get('/map/china.json')
       this.$echarts.registerMap('china', res.data)
       // 初始化配置
@@ -93,9 +108,11 @@ export default {
     },
     // 获取数据
     getData(res) {
+      this.initCharts()
       // const { data: res } = await this.$http.get('map')
       this.allData = res
       this.updateChart()
+      this.screenAdapter()
     },
     // 更新图表
     updateChart() {
@@ -122,10 +139,10 @@ export default {
         series: seriesArr
       }
       this.chartInstance.setOption(dataOption)
-      this.screenAdapter()
     },
     // 屏幕适配
     screenAdapter() {
+      if (!this.allData) return
       const titleFontSize = (this.$refs.map_ref.offsetWidth / 100) * 3.6
       // 设置响应式配置
       const AdapterOption = {

@@ -8,7 +8,9 @@
 </template>
 
 <script>
-import debounce from '@/utils/debounce.js'
+import Debounce from '@/utils/debounce.js'
+import { mapState } from 'vuex'
+import { getThemeValue } from '@/utils/theme_utils.js'
 
 export default {
   name: 'Hot',
@@ -21,21 +23,22 @@ export default {
     }
   },
   created() {
-    this.$socket.registerCallBack('hotData', this.getData)
-  },
-  mounted() {
-    this.initCharts()
     this.$socket.send({
       action: 'getData',
       socketType: 'hotData',
       chartName: 'hotproduct',
       value: ''
     })
+    this.$socket.registerCallBack('hotData', this.getData)
+  },
+  mounted() {
+    // this.initCharts()
     // 防抖
-    window.onresize = debounce(this.screenAdapter, 200)
+    // window.onresize = new Debounce().create(this.screenAdapter, 200)
+    window.addEventListener('resize', new Debounce().create(this.screenAdapter, 200))
   },
   beforeDestroy() {
-    window.onresize = null
+    window.removeEventListener('resize', this.screenAdapter)
     this.$socket.unRegisterCallBack('hotData')
   },
   computed: {
@@ -47,14 +50,24 @@ export default {
     },
     comStyle() {
       return {
-        fontSize: this.titleFontSize + 'px'
+        fontSize: this.titleFontSize + 'px',
+        color: getThemeValue(this.theme).titleColor
       }
+    },
+    ...mapState(['theme'])
+  },
+  watch: {
+    theme() {
+      this.chartInstance.dispose()
+      this.initCharts()
+      this.updateChart()
+      this.screenAdapter()
     }
   },
   methods: {
     // 创建echarts实例对象
     initCharts() {
-      this.chartInstance = this.$echarts.init(this.$refs.hot_ref, 'chalk')
+      this.chartInstance = this.$echarts.init(this.$refs.hot_ref, this.theme)
       // 初始化配置
       const initOption = {
         title: {
@@ -117,9 +130,11 @@ export default {
     },
     // 获取数据
     getData(res) {
+      this.initCharts()
       // const { data: res } = await this.$http.get('hotproduct')
       this.allData = res
       this.updateChart()
+      this.screenAdapter()
     },
     // 更新图表
     updateChart() {
@@ -145,10 +160,10 @@ export default {
         ]
       }
       this.chartInstance.setOption(dataOption)
-      this.screenAdapter()
     },
     // 屏幕适配
     screenAdapter() {
+      if (!this.allData) return
       this.titleFontSize = (this.$refs.hot_ref.offsetWidth / 100) * 3.6
       // 设置响应式配置
       const AdapterOption = {
@@ -158,8 +173,8 @@ export default {
           }
         },
         legend: {
-          itemWidth: this.titleFontSize / 2,
-          itemHeight: this.titleFontSize / 2,
+          itemWidth: this.titleFontSize,
+          itemHeight: this.titleFontSize,
           itemGap: this.titleFontSize / 2,
           textStyle: {
             fontSize: this.titleFontSize / 2
@@ -200,7 +215,7 @@ export default {
   top: 50%;
   transform: translateY(-50%);
   cursor: pointer;
-  color: #fff;
+  color: rgb(101, 68, 219);
 }
 .arr-right {
   position: absolute;
@@ -208,12 +223,12 @@ export default {
   top: 50%;
   transform: translateY(-50%);
   cursor: pointer;
-  color: #fff;
+  color: rgb(101, 68, 219);
 }
 .titleStyle {
   position: absolute;
   left: 80%;
   bottom: 20px;
-  color: #fff;
+  color: rgb(101, 68, 219);
 }
 </style>

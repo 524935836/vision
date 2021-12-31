@@ -5,7 +5,8 @@
 </template>
 
 <script>
-import debounce from '@/utils/debounce.js'
+import Debounce from '@/utils/debounce.js'
+import { mapState } from 'vuex'
 
 export default {
   name: 'Rank',
@@ -19,28 +20,41 @@ export default {
     }
   },
   created() {
-    this.$socket.registerCallBack('rankData', this.getData)
-  },
-  mounted() {
-    this.initCharts()
     this.$socket.send({
       action: 'getData',
       socketType: 'rankData',
       chartName: 'rank',
       value: ''
     })
+    this.$socket.registerCallBack('rankData', this.getData)
+  },
+  mounted() {
+    // this.initCharts()
+
     // 防抖
-    window.onresize = debounce(this.screenAdapter, 200)
+    // window.onresize = new Debounce().create(this.screenAdapter, 200)
+    window.addEventListener('resize', new Debounce().create(this.screenAdapter, 200))
   },
   beforeDestroy() {
-    window.onresize = null
+    window.removeEventListener('resize', this.screenAdapter)
     clearInterval(this.timerId)
     this.$socket.unRegisterCallBack('rankData')
+  },
+  computed: {
+    ...mapState(['theme'])
+  },
+  watch: {
+    theme() {
+      this.chartInstance.dispose()
+      this.initCharts()
+      this.updateChart()
+      this.screenAdapter()
+    }
   },
   methods: {
     // 创建echarts实例对象
     initCharts() {
-      this.chartInstance = this.$echarts.init(this.$refs.rank_ref, 'chalk')
+      this.chartInstance = this.$echarts.init(this.$refs.rank_ref, this.theme)
       // 初始化配置
       const initOption = {
         title: {
@@ -81,10 +95,12 @@ export default {
     },
     // 获取数据
     getData(res) {
+      this.initCharts()
       // const { data: res } = await this.$http.get('rank')
       this.allData = res
       this.allData.sort((a, b) => b.value - a.value)
       this.updateChart()
+      this.screenAdapter()
       this.startInterval()
     },
     // 更新图表
@@ -138,10 +154,10 @@ export default {
         ]
       }
       this.chartInstance.setOption(dataOption)
-      this.screenAdapter()
     },
     // 屏幕适配
     screenAdapter() {
+      if (!this.allData) return
       const titleFontSize = (this.$refs.rank_ref.offsetWidth / 100) * 3.6
       // 设置响应式配置
       const AdapterOption = {

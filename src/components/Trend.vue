@@ -20,7 +20,9 @@
 </template>
 
 <script>
-import debounce from '@/utils/debounce.js'
+import Debounce from '@/utils/debounce.js'
+import { mapState } from 'vuex'
+import { getThemeValue } from '@/utils/theme_utils.js'
 
 export default {
   name: 'Trend',
@@ -36,21 +38,23 @@ export default {
     }
   },
   created() {
-    this.$socket.registerCallBack('trendData', this.getData)
-  },
-  mounted() {
-    this.initCharts()
     this.$socket.send({
       action: 'getData',
       socketType: 'trendData',
       chartName: 'trend',
       value: ''
     })
+    this.$socket.registerCallBack('trendData', this.getData)
+  },
+  mounted() {
+    // this.initCharts()
+
     // 防抖
-    window.onresize = debounce(this.screenAdapter, 200)
+    // window.onresize = new Debounce().create(this.screenAdapter, 200)
+    window.addEventListener('resize', new Debounce().create(this.screenAdapter, 200))
   },
   beforeDestroy() {
-    window.onresize = null
+    window.removeEventListener('resize', this.screenAdapter)
     this.$socket.unRegisterCallBack('trendData')
   },
   computed: {
@@ -71,20 +75,31 @@ export default {
     // 标题大小适配
     titleStyle() {
       return {
-        fontSize: this.titleFontSize + 'px'
+        fontSize: this.titleFontSize + 'px',
+        color: getThemeValue(this.theme).titleColor
       }
     },
     // 下拉框适配
     selectStyle() {
       return {
-        marginLeft: this.titleFontSize / 1.6 + 'px'
+        marginLeft: this.titleFontSize / 1.6 + 'px',
+        backgroundColor: getThemeValue(this.theme).selectColor
       }
+    },
+    ...mapState(['theme'])
+  },
+  watch: {
+    theme() {
+      this.chartInstance.dispose()
+      this.initCharts()
+      this.updateChart()
+      this.screenAdapter()
     }
   },
   methods: {
     // 创建echarts实例对象
     initCharts() {
-      this.chartInstance = this.$echarts.init(this.$refs.trend_ref, 'chalk')
+      this.chartInstance = this.$echarts.init(this.$refs.trend_ref, this.theme)
       // 初始化配置
       const initOption = {
         xAxis: {
@@ -114,9 +129,11 @@ export default {
     },
     // 获取数据
     getData(res) {
+      this.initCharts()
       // const { data: res } = await this.$http.get('trend')
       this.allData = res
       this.updateChart()
+      this.screenAdapter()
     },
     // 更新图表
     updateChart() {
@@ -174,10 +191,10 @@ export default {
         series: seriesArr
       }
       this.chartInstance.setOption(dataOption)
-      this.screenAdapter()
     },
     // 屏幕适配
     screenAdapter() {
+      if (!this.allData) return
       this.titleFontSize = (this.$refs.trend_ref.offsetWidth / 100) * 3.6
       // 设置响应式配置
       const AdapterOption = {

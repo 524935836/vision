@@ -5,7 +5,8 @@
 </template>
 
 <script>
-import debounce from '@/utils/debounce.js'
+import Debounce from '@/utils/debounce.js'
+import { mapState } from 'vuex'
 
 export default {
   name: 'Seller',
@@ -19,28 +20,41 @@ export default {
     }
   },
   created() {
-    this.$socket.registerCallBack('sellerkData', this.getData)
-  },
-  mounted() {
-    this.initCharts()
     this.$socket.send({
       action: 'getData',
       socketType: 'sellerkData',
       chartName: 'seller',
       value: ''
     })
+    this.$socket.registerCallBack('sellerkData', this.getData)
+  },
+  mounted() {
+    // this.initCharts()
+
     // 防抖
-    window.onresize = debounce(this.screenAdapter, 200)
+    // window.onresize = new Debounce().create(this.screenAdapter, 200)
+    window.addEventListener('resize', new Debounce().create(this.screenAdapter, 200))
   },
   beforeDestroy() {
     clearInterval(this.timerId)
-    window.onresize = null
+    window.removeEventListener('resize', this.screenAdapter)
     this.$socket.unRegisterCallBack('sellerkData')
+  },
+  computed: {
+    ...mapState(['theme'])
+  },
+  watch: {
+    theme() {
+      this.chartInstance.dispose()
+      this.initCharts()
+      this.updateChart()
+      this.screenAdapter()
+    }
   },
   methods: {
     // 创建echarts实例对象
     initCharts() {
-      this.chartInstance = this.$echarts.init(this.$refs.seller_ref, 'chalk')
+      this.chartInstance = this.$echarts.init(this.$refs.seller_ref, this.theme)
       // 初始化配置
       const initOption = {
         title: {
@@ -116,6 +130,7 @@ export default {
     },
     // 获取数据
     getData(res) {
+      this.initCharts()
       // const { data: res } = await this.$http.get('seller')
       this.allData = res
       // 从小到大排序
@@ -123,6 +138,7 @@ export default {
       // 计算总页数
       this.totalPage = Math.ceil(this.allData.length / 5)
       this.updateChart()
+      this.screenAdapter()
       this.startInterval()
     },
     // 更新图表
@@ -143,7 +159,6 @@ export default {
         }
       }
       this.chartInstance.setOption(dataOption)
-      this.screenAdapter()
     },
     // 每三秒切换下一页
     startInterval() {
@@ -158,6 +173,7 @@ export default {
     },
     // 屏幕适配
     screenAdapter() {
+      if (!this.allData) return
       const titleFontSize = (this.$refs.seller_ref.offsetWidth / 100) * 3.6
       // 设置响应式配置
       const AdapterOption = {

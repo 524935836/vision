@@ -7,8 +7,15 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <link rel="icon" href="<%= BASE_URL %>favicon.ico">
   <title>
-    <%= htmlWebpackPlugin.options.title %>
+    <%= htmlWebpackPlugin.options.isProd ? '' : 'dev-' %>电商平台实时监控系统
   </title>
+  <% if(htmlWebpackPlugin.options.isProd){%>
+    <script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.11/vue.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/vue-router/3.2.0/vue-router.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/axios/0.21.0/axios.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/lodash.js/4.17.20/lodash.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/echarts/4.8.0/echarts.min.js"></script>
+    <% } %>
 </head>
 
 <body>
@@ -18,8 +25,9 @@
   </noscript>
   <div id="app"></div>
   <!-- built files will be auto injected -->
-  <script src="static/lib/echarts.min.js"></script>
-  <script src="static/theme/chalk.js"></script>
+  <!-- <script src="static/lib/echarts.min.js"></script> -->
+  <!-- <script src="static/theme/chalk.js"></script>
+  <script src="static/theme/vintage.js"></script> -->
 </body>
 
 </html>
